@@ -45,6 +45,7 @@ class AdminService {
                 ItemMatchRes.ItemMatch(
                     itemId = it.itemId,
                     itemEngName = it.itemEngName,
+                    itemImageUrl = it.imageUrl,
                 )
             }
         )

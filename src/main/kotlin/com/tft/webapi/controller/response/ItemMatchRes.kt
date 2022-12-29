@@ -6,5 +6,6 @@ data class ItemMatchRes(
     data class ItemMatch(
         var itemId: String?,
         var itemEngName: String,
+        var itemImageUrl: String,
     )
 }

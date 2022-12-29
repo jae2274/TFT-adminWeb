@@ -15,8 +15,38 @@ let app = new Vue({
         this.reload()
     },
     methods: {
+        handleIds() {
+            // this.$toast.show('dragEnd')
+            if (this.itemIds[this.movingIndex].isFixed || this.itemIds[this.futureIndex].isFixed)
+                return
+
+            this.futureItem = this.itemIds[this.futureIndex]
+            this.movingItem = this.itemIds[this.movingIndex]
+            const _items = Object.assign([], this.itemIds)
+            _items[this.futureIndex] = this.movingItem
+            _items[this.movingIndex] = this.futureItem
+
+            this.itemIds = _items
+        },
+        handleEngNames() {
+            // this.$toast.show('dragEnd')
+            if (this.itemIds[this.movingIndex].isFixed || this.itemIds[this.futureIndex].isFixed)
+                return
+
+            this.futureItem = this.itemEngNames[this.futureIndex]
+            this.movingItem = this.itemEngNames[this.movingIndex]
+            const _items = Object.assign([], this.itemEngNames)
+            _items[this.futureIndex] = this.movingItem
+            _items[this.movingIndex] = this.futureItem
+
+            this.itemEngNames = _items
+        },
         checkMove: function (evt) {
-            return evt.draggedContext.element.isFixed == false;
+            // return this.itemIds[evt.draggedContext.element.index].isFixed == false;
+            const {index, futureIndex} = evt.draggedContext
+            this.movingIndex = index
+            this.futureIndex = futureIndex
+            return false // disable sort
         },
         putItemMatches: async function () {
 
@@ -40,13 +70,14 @@ let app = new Vue({
         async reload() {
             const response = await getItemMatches();
             this.itemIds = response.itemMatches
-                .map(value => {
-                    return {itemId: value.itemId, isFixed: false};
+                .map((value, index) => {
+                    return {itemId: value.itemId, index: index, isFixed: false};
                 });
 
+
             this.itemEngNames = response.itemMatches
-                .map(value => {
-                        return {itemEngName: value.itemEngName};
+                .map((value, index) => {
+                        return {itemEngName: value.itemEngName, itemImageUrl: value.itemImageUrl, index: index};
                     }
                 );
         }
