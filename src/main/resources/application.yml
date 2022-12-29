@@ -1,0 +1,13 @@
+#mongodb:
+#  uri: mongodb://localhost:27017/tft_service
+#  dbname: tft_service
+
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: tft_service
+
+spring.devtools.restart.enabled: false
+spring.thymeleaf.cache: false
