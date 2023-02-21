@@ -1,4 +1,4 @@
-export function calculateSimilarity(s1, s2, ignoreCase = true) {
+function calculateSimilarity(s1, s2, ignoreCase = true) {
     s1 = ignoreCase ? s1.toLowerCase() : s1;
     s2 = ignoreCase ? s2.toLowerCase() : s2;
 
@@ -13,7 +13,7 @@ export function calculateSimilarity(s1, s2, ignoreCase = true) {
     return longerLength === 0 ? 1.0 : (longerLength - editDistance(longer, shorter)) / longerLength;
 }
 
-export function getMostSimilarity(target, strings, ignoreCase = true) {
+function getMostSimilarity(target, strings, ignoreCase = true) {
     let maxSimilarity = 0.0;
     let mostSimilarity = "";
     for (let string of strings) {
@@ -26,7 +26,7 @@ export function getMostSimilarity(target, strings, ignoreCase = true) {
     return mostSimilarity;
 }
 
-export function editDistance(s1, s2) {
+function editDistance(s1, s2) {
     s1 = s1.toLowerCase();
     s2 = s2.toLowerCase();
     const costs = new Array(s2.length + 1);
