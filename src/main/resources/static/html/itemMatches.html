@@ -48,7 +48,7 @@
                                  style="height: 50px;display: flex;">
                                 <span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
                                 <span><img v-bind:src="itemEngNameObj.itemImageUrl" style="height: 50px;"></span>
-                                <div><span>{{itemEngNameObj.target}}</span>
+                                <div><span v-bind:title="itemEngNameObj.original">{{itemEngNameObj.target}}</span>
                                     <!--                                    <span>{{itemEngNameObj.itemEngName}}</span>-->
                                 </div>
                             </div>
@@ -58,7 +58,7 @@
                         <draggable v-model="itemIdValues" draggable=".itemIdList" :move="checkMove" @end="handleIds">
                             <div v-for="itemIdObj in itemIdValues" class="itemIdList" style="height: 50px;">
                                 <span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
-                                <span>{{itemIdObj.target}}</span>
+                                <span v-bind:title="itemIdObj.original">{{itemIdObj.target}}</span>
                                 <!--                                <span>{{itemIdObj.itemId}}</span>-->
                                 <input type="checkbox" v-model="itemIdObj.isFixed">
                             </div>

@@ -79,16 +79,20 @@ let app = new Vue({
             this.removeEngStrings = [...this.removeEngStrings.slice(0, index), ...this.removeEngStrings.slice(index + 1, this.removeEngStrings.length)]
         },
         removeTargetStrings() {
-            for (let removeString of this.removeEngStrings) {
-                for (let engValue of this.itemEngValues) {
-                    engValue.target = engValue.target.replaceAll(removeString.target, "")
+            for (let engValue of this.itemEngValues) {
+                let target = engValue.original
+                for (let removeString of this.removeEngStrings) {
+                    target = target.replaceAll(removeString.target, "")
                 }
+                engValue.target = target
             }
 
-            for (let removeString of this.removeIdStrings) {
-                for (let idValue of this.itemIdValues) {
-                    idValue.target = idValue.target.replaceAll(removeString.target, "")
+            for (let idValue of this.itemIdValues) {
+                let target = idValue.original
+                for (let removeString of this.removeIdStrings) {
+                    target = target.replaceAll(removeString.target, "")
                 }
+                idValue.target = target
             }
 
             this.sortSimilarities()
@@ -129,8 +133,7 @@ let app = new Vue({
                 .map(values => calculateSimilarity(values[0], values[1]))
 
             this.similarities.forEach((value, index) => {
-                if (value > 0.9)
-                    this.itemIdValues[index].isFixed = true
+                this.itemIdValues[index].isFixed = value > 0.9
             })
         },
         sortSimilarities() {
