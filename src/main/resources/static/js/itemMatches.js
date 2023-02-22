@@ -1,9 +1,8 @@
 let app = new Vue({
     el: '#app',
     data: {
-        // synergies:{},
         removeEngStrings: [{target: ' '}, {target: '\''}],
-        removeIdStrings: [{target: 'TFT8_Item_'}, {target: 'TFT4_Item_'}, {target: 'TFT5_Item_'}, {target: 'Ornn'}, {target: 'Item'}],
+        removeIdStrings: [{target: 'TFT8_Item_'}, {target: 'TFT4_Item_'}, {target: 'TFT5_Item_'}, {target: 'Ornn'}, {target: 'Item'}, {target: 'TFT__'}],
         itemEngValues: [],
         itemIdValues: [],
         similarities: [],
@@ -19,7 +18,6 @@ let app = new Vue({
     },
     methods: {
         handleIds() {
-            // this.$toast.show('dragEnd')
             if (this.itemIdValues[this.movingIndex].isFixed || this.itemIdValues[this.futureIndex].isFixed)
                 return
 
@@ -34,7 +32,6 @@ let app = new Vue({
             this.setSimilarities()
         },
         handleEngNames() {
-            // this.$toast.show('dragEnd')
             if (this.itemIdValues[this.movingIndex].isFixed || this.itemIdValues[this.futureIndex].isFixed)
                 return
 
@@ -49,7 +46,6 @@ let app = new Vue({
             this.setSimilarities()
         },
         checkMove: function (evt) {
-            // return this.itemIdValues[evt.draggedContext.element.index].isFixed == false;
             const {index, futureIndex} = evt.draggedContext
             this.movingIndex = index
             this.futureIndex = futureIndex
@@ -83,29 +79,17 @@ let app = new Vue({
             this.removeEngStrings = [...this.removeEngStrings.slice(0, index), ...this.removeEngStrings.slice(index + 1, this.removeEngStrings.length)]
         },
         removeTargetStrings() {
-            // let replacedItemEngs = this.itemEngValues.map(value => value.target)
-            //
-            // for (let removeString of this.removeEngStrings) {
-            //     replacedItemEngs = replacedItemEngs.map(itemEngName => itemEngName.replaceAll(removeString.target, ""))
-            // }
-
             for (let removeString of this.removeEngStrings) {
                 for (let engValue of this.itemEngValues) {
                     engValue.target = engValue.target.replaceAll(removeString.target, "")
                 }
             }
+
             for (let removeString of this.removeIdStrings) {
                 for (let idValue of this.itemIdValues) {
                     idValue.target = idValue.target.replaceAll(removeString.target, "")
                 }
             }
-
-
-            // let replacedItemIds = this.itemIdValues.map(value => value.target)
-            //
-            // for (let removeString of this.removeIdStrings) {
-            //     replacedItemIds = replacedItemIds.map(itemId => itemId.replaceAll(removeString.target, ""))
-            // }
 
             this.sortSimilarities()
         },
@@ -139,14 +123,13 @@ let app = new Vue({
 
             this.removeTargetStrings()
             this.matchMostSimilarity()
-            // this.setSimilarities(this.itemEngValues.map(value => value.itemEngName), this.itemIdValues.map(value => value.itemId))
         },
         setSimilarities() {
             this.similarities = zip2(this.itemEngValues.map(value => value.target), this.itemIdValues.map(value => value.target))
                 .map(values => calculateSimilarity(values[0], values[1]))
 
             this.similarities.forEach((value, index) => {
-                if (value > 0.99)
+                if (value > 0.9)
                     this.itemIdValues[index].isFixed = true
             })
         },
@@ -159,61 +142,57 @@ let app = new Vue({
             this.itemIdValues = package.map(value => value[1])
             this.similarities = package.map(value => value[2])
         },
-        // search() {
-        //     const searchEngValues = this.itemEngValues.filter(value => value.target.includes(this.searchTarget));
-        //     removeAll(this.itemEngValues, searchEngValues)
-        //     this.itemEngValues = [...searchEngValues, ...this.itemEngValues]
-        //
-        //     const searchIdValues = this.itemIdValues.filter(value => value.target.includes(this.searchTarget));
-        //     removeAll(this.itemIdValues, searchIdValues)
-        //     this.itemIdValues = [...searchIdValues, ...this.itemIdValues]
-        //
-        //     this.setSimilarities()
-        // },
         matchMostSimilarity() {
-            let newItemIdValues = []
-            let newItemEngValues = []
+            this.removeTargetStrings()
 
             let searchEngValues = []
             let searchIdValues = []
             if (this.searchTarget !== '') {
-                searchEngValues = this.itemEngValues.filter(value => value.target.includes(this.searchTarget));
-                removeAll(this.itemEngValues, searchEngValues)
-                // this.itemEngValues = [...searchEngValues, ...this.itemEngValues]
+                searchEngValues = this.itemEngValues.filter(value => value.target.toLowerCase().includes(this.searchTarget.toLowerCase()));
+                this.itemEngValues = removeAll(this.itemEngValues, searchEngValues)
 
-                searchIdValues = this.itemIdValues.filter(value => value.target.includes(this.searchTarget));
-                removeAll(this.itemIdValues, searchIdValues)
-                // this.itemIdValues = [...searchIdValues, ...this.itemIdValues]
+                searchIdValues = this.itemIdValues.filter(value => value.target.toLowerCase().includes(this.searchTarget.toLowerCase()));
+                this.itemIdValues = removeAll(this.itemIdValues, searchIdValues)
             }
 
-            for (let goalSimilarity = 0.95; goalSimilarity > 0.05; goalSimilarity -= 0.05) {
-                for (let itemEngValue of this.itemEngValues) {
-                    const mostSimliarId = getMostSimilarity(itemEngValue.target, this.itemIdValues.map(value => value.target))
-                    if (calculateSimilarity(itemEngValue.target, mostSimliarId) > goalSimilarity) {
-                        const newItemIdValue = this.itemIdValues.find(value => value.target === mostSimliarId)
+            const [sortedSearchEngValues, sortedSearchIdValues] = matchMostSimilarity(searchEngValues, searchIdValues);
+            const [newItemEngValues, newItemIdValues] = matchMostSimilarity(this.itemEngValues, this.itemIdValues);
 
-                        newItemIdValues.push(newItemIdValue)
-                        newItemEngValues.push(itemEngValue)
-                    }
-                    removeAll(this.itemIdValues, newItemIdValues)
-                }
-                removeAll(this.itemEngValues, newItemEngValues)
-            }
-
-            this.itemEngValues = [...searchEngValues, ...newItemEngValues, ...this.itemEngValues]
-            this.itemIdValues = [...searchIdValues, ...newItemIdValues, ...this.itemIdValues] //[...newItemIdValues, ...this.itemIdValues]
+            this.itemEngValues = [...sortedSearchEngValues, ...newItemEngValues]
+            this.itemIdValues = [...sortedSearchIdValues, ...newItemIdValues]
 
             this.setSimilarities()
         }
     }
 })
 
-function removeAll(targetArray, removeArray) {
-    for (let removeEle of removeArray) {
-        const index = targetArray.findIndex(value => value.original == removeEle.original)
-        if (index > -1)
-            targetArray.splice(index, 1)
+function matchMostSimilarity(firstArray, secondArray) {
+    const newFirstArray = []
+    const newSecondArrays = []
+
+    for (let goalSimilarity = 0.95; goalSimilarity > 0.05; goalSimilarity -= 0.05) {
+        for (let firstItem of firstArray) {
+            if (secondArray.length == 0)
+                break
+
+            const mostSimilarStr = getMostSimilarity(firstItem.target, secondArray.map(value => value.target))
+
+            if (calculateSimilarity(firstItem.target, mostSimilarStr) > goalSimilarity) {
+                const newSecondItem = secondArray.find(value => value.target === mostSimilarStr)
+
+                newFirstArray.push(firstItem)
+                newSecondArrays.push(newSecondItem)
+            }
+            secondArray = removeAll(secondArray, newSecondArrays)
+        }
+        firstArray = removeAll(firstArray, newFirstArray)
     }
+
+    return [[...newFirstArray, ...firstArray], [...newSecondArrays, ...secondArray]]
+}
+
+function removeAll(targetArray, removeArray) {
+    return targetArray.filter(targetValue => removeArray.findIndex(removeValue => removeValue.original == targetValue.original) < 0)
 }
 
 async function getItemMatches() {
