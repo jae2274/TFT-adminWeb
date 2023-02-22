@@ -37,6 +37,9 @@
         <button v-on:click="removeTargetStrings">비교</button>
         <button v-on:click="matchMostSimilarity">리매칭</button>
         <div>
+            <input type="text" v-on:keyup.enter="matchMostSimilarity" v-model="searchTarget"/>
+        </div>
+        <div>
             <div class="guide-cheatsheet__synergy" style="overflow-x: auto;display: flex;align-items: center;">
                 <div style="min-width: 1800px;float: left;display: flex;width: 33%;">
                     <div id="itemEngNames" style="width: 500px;">

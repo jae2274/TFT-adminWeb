@@ -12,7 +12,7 @@ let app = new Vue({
         itemsMap: {},
         targets: [],
         itemsMapById: {},
-        winners: []
+        searchTarget: '',
     },
     async mounted() {
         this.reload()
@@ -59,8 +59,8 @@ let app = new Vue({
 
             const itemMatches = this.itemEngValues.map((value, index) => {
                 return {
-                    itemEngName: value.itemEngName,
-                    itemId: this.itemIdValues[index].itemId,
+                    itemEngName: value.original,
+                    itemId: this.itemIdValues[index].original,
                     isFixed: this.itemIdValues[index].isFixed,
                 }
             });
@@ -122,14 +122,14 @@ let app = new Vue({
             const response = await getItemMatches();
             this.itemIdValues = response.itemMatches
                 .map((value, index) => {
-                    return {itemId: value.itemId, index: index, isFixed: false, target: value.itemId};
+                    return {original: value.itemId, index: index, isFixed: false, target: value.itemId};
                 });
 
 
             this.itemEngValues = response.itemMatches
                 .map((value, index) => {
                         return {
-                            itemEngName: value.itemEngName,
+                            original: value.itemEngName,
                             itemImageUrl: value.itemImageUrl,
                             target: value.itemEngName,
                             index: index
@@ -138,11 +138,17 @@ let app = new Vue({
                 );
 
             this.removeTargetStrings()
+            this.matchMostSimilarity()
             // this.setSimilarities(this.itemEngValues.map(value => value.itemEngName), this.itemIdValues.map(value => value.itemId))
         },
         setSimilarities() {
             this.similarities = zip2(this.itemEngValues.map(value => value.target), this.itemIdValues.map(value => value.target))
                 .map(values => calculateSimilarity(values[0], values[1]))
+
+            this.similarities.forEach((value, index) => {
+                if (value > 0.99)
+                    this.itemIdValues[index].isFixed = true
+            })
         },
         sortSimilarities() {
             this.setSimilarities()
@@ -153,36 +159,58 @@ let app = new Vue({
             this.itemIdValues = package.map(value => value[1])
             this.similarities = package.map(value => value[2])
         },
+        // search() {
+        //     const searchEngValues = this.itemEngValues.filter(value => value.target.includes(this.searchTarget));
+        //     removeAll(this.itemEngValues, searchEngValues)
+        //     this.itemEngValues = [...searchEngValues, ...this.itemEngValues]
+        //
+        //     const searchIdValues = this.itemIdValues.filter(value => value.target.includes(this.searchTarget));
+        //     removeAll(this.itemIdValues, searchIdValues)
+        //     this.itemIdValues = [...searchIdValues, ...this.itemIdValues]
+        //
+        //     this.setSimilarities()
+        // },
         matchMostSimilarity() {
             let newItemIdValues = []
             let newItemEngValues = []
 
-            for (let i = 0; i < 10; i++) {
+            let searchEngValues = []
+            let searchIdValues = []
+            if (this.searchTarget !== '') {
+                searchEngValues = this.itemEngValues.filter(value => value.target.includes(this.searchTarget));
+                removeAll(this.itemEngValues, searchEngValues)
+                // this.itemEngValues = [...searchEngValues, ...this.itemEngValues]
+
+                searchIdValues = this.itemIdValues.filter(value => value.target.includes(this.searchTarget));
+                removeAll(this.itemIdValues, searchIdValues)
+                // this.itemIdValues = [...searchIdValues, ...this.itemIdValues]
+            }
+
+            for (let goalSimilarity = 0.95; goalSimilarity > 0.05; goalSimilarity -= 0.05) {
                 for (let itemEngValue of this.itemEngValues) {
                     const mostSimliarId = getMostSimilarity(itemEngValue.target, this.itemIdValues.map(value => value.target))
-                    if (calculateSimilarity(itemEngValue.target, mostSimliarId) > 0.8) {
+                    if (calculateSimilarity(itemEngValue.target, mostSimliarId) > goalSimilarity) {
                         const newItemIdValue = this.itemIdValues.find(value => value.target === mostSimliarId)
-                        const removeIndex = this.itemIdValues.indexOf(newItemIdValue)
 
                         newItemIdValues.push(newItemIdValue)
                         newItemEngValues.push(itemEngValue)
                     }
+                    removeAll(this.itemIdValues, newItemIdValues)
                 }
-                removeAll(this.itemIdValues, newItemIdValues)
                 removeAll(this.itemEngValues, newItemEngValues)
             }
 
-            this.itemEngValues = [...newItemEngValues, ...this.itemEngValues]
-            this.itemIdValues = [...newItemIdValues, ...this.itemIdValues] //[...newItemIdValues, ...this.itemIdValues]
+            this.itemEngValues = [...searchEngValues, ...newItemEngValues, ...this.itemEngValues]
+            this.itemIdValues = [...searchIdValues, ...newItemIdValues, ...this.itemIdValues] //[...newItemIdValues, ...this.itemIdValues]
 
-            this.sortSimilarities()
+            this.setSimilarities()
         }
     }
 })
 
 function removeAll(targetArray, removeArray) {
     for (let removeEle of removeArray) {
-        const index = targetArray.indexOf(removeEle)
+        const index = targetArray.findIndex(value => value.original == removeEle.original)
         if (index > -1)
             targetArray.splice(index, 1)
     }
