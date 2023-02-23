@@ -3,6 +3,10 @@
 #  dbname: tft_service
 
 spring:
+  thymeleaf:
+    prefix: classpath:templates/
+    suffix: .html
+    cache: false
   data:
     mongodb:
       host: localhost

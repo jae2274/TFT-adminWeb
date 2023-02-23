@@ -7,5 +7,5 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor
 
 interface ChampionRepository : MongoRepository<Champion, String>, QuerydslPredicateExecutor<Champion> {
     fun findAllBySeasonAndChampionEngNameIn(season: String, championEngNames: List<String>): List<Champion>
-    fun findAllBySeason(season: String): List<Champion>
+    fun findAllBySeasonAndIsFixed(season: String, isFixed: Boolean): List<Champion>
 }

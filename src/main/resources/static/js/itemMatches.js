@@ -48,7 +48,7 @@ let app = new Vue({
                 matches: itemMatches
             }
 
-            await callApi("PUT", "http://localhost:8080/item_matches?season=", request)
+            await callApi("PUT", "http://localhost:8080/" + subUrl + "?season=", request)
             await this.reload()
         },
         newRemoveEngString(index) {
@@ -126,7 +126,7 @@ let app = new Vue({
 
 
 async function getItemMatches() {
-    let response = await fetch("http://localhost:8080/item_matches?season=" + 8);
+    let response = await fetch("http://localhost:8080/" + subUrl + "?season=" + 8);
     let json = response.json();
 
     return json;

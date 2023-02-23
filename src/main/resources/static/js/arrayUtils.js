@@ -28,7 +28,9 @@ function matchMostSimilarities(firstArray, secondArray, priorityKeyword) {
 
 function setFixed(similarities, array) {
     return array.map((value, index) => {
-        return Object.assign({isFixed: (similarities[index] > 0.9)}, value)
+        const newValue = Object.assign({}, value)
+        newValue.isFixed = similarities[index] > 0.9
+        return newValue
     })
 }
 
