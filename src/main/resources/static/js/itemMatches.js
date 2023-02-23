@@ -18,30 +18,12 @@ let app = new Vue({
     },
     methods: {
         handleIds() {
-            if (this.itemIdValues[this.movingIndex].isFixed || this.itemIdValues[this.futureIndex].isFixed)
-                return
-
-            this.futureItem = this.itemIdValues[this.futureIndex]
-            this.movingItem = this.itemIdValues[this.movingIndex]
-            const _items = Object.assign([], this.itemIdValues)
-            _items[this.futureIndex] = this.movingItem
-            _items[this.movingIndex] = this.futureItem
-
-            this.itemIdValues = _items
+            this.itemIdValues = swapIndexes(this.itemIdValues, this.futureIndex, this.movingIndex)
 
             this.setSimilarities()
         },
         handleEngNames() {
-            if (this.itemIdValues[this.movingIndex].isFixed || this.itemIdValues[this.futureIndex].isFixed)
-                return
-
-            this.futureItem = this.itemEngValues[this.futureIndex]
-            this.movingItem = this.itemEngValues[this.movingIndex]
-            const _items = Object.assign([], this.itemEngValues)
-            _items[this.futureIndex] = this.movingItem
-            _items[this.movingIndex] = this.futureItem
-
-            this.itemEngValues = _items
+            this.itemEngValues = swapIndexes(this.itemEngValues, this.futureIndex, this.movingIndex)
 
             this.setSimilarities()
         },

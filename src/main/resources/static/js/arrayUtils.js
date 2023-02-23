@@ -1,3 +1,13 @@
+function swapIndexes(array, futureIndex, movingIndex) {
+    const futureItem = array[futureIndex]
+    const movingItem = array[movingIndex]
+    const newArray = Object.assign([], array)
+    newArray[futureIndex] = movingItem
+    newArray[movingIndex] = futureItem
+
+    return newArray
+}
+
 function matchMostSimilarities(firstArray, secondArray, priorityKeyword) {
     let priorityFirstArray = []
     let prioritySecondArray = []
