@@ -1,7 +1,6 @@
 package com.tft.webapi.service
 
 import com.tft.webapi.controller.request.PutMatchesReq
-import com.tft.webapi.controller.response.ChampionMatchRes
 import com.tft.webapi.controller.response.MatchRes
 import com.tft.webapi.entity.Champion
 import com.tft.webapi.entity.Item
@@ -17,14 +16,15 @@ class AdminService(
 ) {
     fun getChampionMatches(
             season: String,
-    ): ChampionMatchRes {
-        val champions: List<Champion> = championRepository.findAllBySeason(season)
+    ): MatchRes {
+        val champions: List<Champion> = championRepository.findAllBySeasonAndIsFixed(season, false)
 
-        return ChampionMatchRes(
-                championMatches = champions.map {
-                    ChampionMatchRes.ChampionMatch(
-                            championId = it.championId,
-                            championEngName = it.championEngName,
+        return MatchRes(
+                matches = champions.map {
+                    MatchRes.MatchData(
+                            dataId = it.championId,
+                            engName = it.championEngName,
+                            imageUrl = it.imageUrl,
                     )
                 }
         )
@@ -63,5 +63,23 @@ class AdminService(
         }
 
         itemRepository.saveAll(items)
+    }
+
+    @Transactional
+
+    fun putChampionMatches(request: PutMatchesReq) {
+        val champions: List<Champion> =
+                championRepository.findAllBySeasonAndChampionEngNameIn(request.season, request.matches.map { it.engName })
+
+        val championMap: Map<String, PutMatchesReq.Match> =
+                request.matches.associateBy({ it.engName }, { it })
+
+        for (champion: Champion in champions) {
+            champion.championId = championMap[champion.championEngName]?.dataId
+            champion.isFixed = championMap[champion.championEngName]?.isFixed ?: false
+        }
+
+        championRepository.saveAll(champions)
+
     }
 }

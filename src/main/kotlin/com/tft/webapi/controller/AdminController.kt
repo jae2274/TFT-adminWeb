@@ -1,7 +1,6 @@
 package com.tft.webapi.controller
 
 import com.tft.webapi.controller.request.PutMatchesReq
-import com.tft.webapi.controller.response.ChampionMatchRes
 import com.tft.webapi.controller.response.MatchRes
 import com.tft.webapi.service.AdminService
 import org.springframework.web.bind.annotation.*
@@ -15,7 +14,7 @@ class AdminController(
     fun championMatches(
             @RequestParam
             season: String,
-    ): ChampionMatchRes {
+    ): MatchRes {
         return adminService.getChampionMatches(season)
     }
 
@@ -33,5 +32,13 @@ class AdminController(
             putItemMatchesReq: PutMatchesReq
     ): Unit {
         adminService.putItemMatches(putItemMatchesReq)
+    }
+
+    @PutMapping("/champion_matches")
+    fun putChampionMatches(
+            @RequestBody
+            putChampionMatchesReq: PutMatchesReq
+    ): Unit {
+        adminService.putChampionMatches(putChampionMatchesReq)
     }
 }
