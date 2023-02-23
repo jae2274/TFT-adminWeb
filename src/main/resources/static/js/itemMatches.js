@@ -67,7 +67,7 @@ let app = new Vue({
             }
 
             await callApi("PUT", "http://localhost:8080/item_matches?season=", request)
-            this.reload()
+            await this.reload()
         },
         newRemoveEngString(index) {
             this.removeEngStrings = [...this.removeEngStrings.slice(0, index), {target: ''}, ...this.removeEngStrings.slice(index, this.removeEngStrings.length)]
@@ -79,26 +79,13 @@ let app = new Vue({
             this.removeEngStrings = [...this.removeEngStrings.slice(0, index), ...this.removeEngStrings.slice(index + 1, this.removeEngStrings.length)]
         },
         removeTargetStrings() {
-            for (let engValue of this.itemEngValues) {
-                let target = engValue.original
-                for (let removeString of this.removeEngStrings) {
-                    target = target.replaceAll(removeString.target, "")
-                }
-                engValue.target = target
-            }
-
-            for (let idValue of this.itemIdValues) {
-                let target = idValue.original
-                for (let removeString of this.removeIdStrings) {
-                    target = target.replaceAll(removeString.target, "")
-                }
-                idValue.target = target
-            }
+            this.itemEngValues = setTargetForCompare(this.itemEngValues, this.removeEngStrings.map(value => value.target))
+            this.itemIdValues = setTargetForCompare(this.itemIdValues, this.removeIdStrings.map(value => value.target))
 
             this.sortSimilarities()
         },
         newRemoveIdString(index) {
-            this.removeIdStrings = [...this.removeIdStrings.slice(0, index), {target: ''}, ...this.removeIdStrings.slice(index, this.removeIdStrings.length)]
+            this.removeIdStrings = [...this.removeIdStrings.slice(0, index + 1), {target: ''}, ...this.removeIdStrings.slice(index + 1, this.removeIdStrings.length)]
 
         },
         removeIdStringInput(index) {
@@ -129,12 +116,9 @@ let app = new Vue({
             this.matchMostSimilarity()
         },
         setSimilarities() {
-            this.similarities = zip2(this.itemEngValues.map(value => value.target), this.itemIdValues.map(value => value.target))
-                .map(values => calculateSimilarity(values[0], values[1]))
+            this.similarities = getSimilaritiesOfTwoArrays(this.itemEngValues, this.itemIdValues)
 
-            this.similarities.forEach((value, index) => {
-                this.itemIdValues[index].isFixed = value > 0.9
-            })
+            this.itemIdValues = setFixed(this.similarities, this.itemIdValues)
         },
         sortSimilarities() {
             this.setSimilarities()
@@ -148,55 +132,16 @@ let app = new Vue({
         matchMostSimilarity() {
             this.removeTargetStrings()
 
-            let searchEngValues = []
-            let searchIdValues = []
-            if (this.searchTarget !== '') {
-                searchEngValues = this.itemEngValues.filter(value => value.target.toLowerCase().includes(this.searchTarget.toLowerCase()));
-                this.itemEngValues = removeAll(this.itemEngValues, searchEngValues)
+            let [newItemEngValues, newItemIdValues] = matchMostSimilarities(this.itemEngValues, this.itemIdValues, this.searchTarget)
 
-                searchIdValues = this.itemIdValues.filter(value => value.target.toLowerCase().includes(this.searchTarget.toLowerCase()));
-                this.itemIdValues = removeAll(this.itemIdValues, searchIdValues)
-            }
-
-            const [sortedSearchEngValues, sortedSearchIdValues] = matchMostSimilarity(searchEngValues, searchIdValues);
-            const [newItemEngValues, newItemIdValues] = matchMostSimilarity(this.itemEngValues, this.itemIdValues);
-
-            this.itemEngValues = [...sortedSearchEngValues, ...newItemEngValues]
-            this.itemIdValues = [...sortedSearchIdValues, ...newItemIdValues]
+            this.itemEngValues = newItemEngValues
+            this.itemIdValues = newItemIdValues
 
             this.setSimilarities()
         }
     }
 })
 
-function matchMostSimilarity(firstArray, secondArray) {
-    const newFirstArray = []
-    const newSecondArrays = []
-
-    for (let goalSimilarity = 0.95; goalSimilarity > 0.05; goalSimilarity -= 0.05) {
-        for (let firstItem of firstArray) {
-            if (secondArray.length == 0)
-                break
-
-            const mostSimilarStr = getMostSimilarity(firstItem.target, secondArray.map(value => value.target))
-
-            if (calculateSimilarity(firstItem.target, mostSimilarStr) > goalSimilarity) {
-                const newSecondItem = secondArray.find(value => value.target === mostSimilarStr)
-
-                newFirstArray.push(firstItem)
-                newSecondArrays.push(newSecondItem)
-            }
-            secondArray = removeAll(secondArray, newSecondArrays)
-        }
-        firstArray = removeAll(firstArray, newFirstArray)
-    }
-
-    return [[...newFirstArray, ...firstArray], [...newSecondArrays, ...secondArray]]
-}
-
-function removeAll(targetArray, removeArray) {
-    return targetArray.filter(targetValue => removeArray.findIndex(removeValue => removeValue.original == targetValue.original) < 0)
-}
 
 async function getItemMatches() {
     let response = await fetch("http://localhost:8080/item_matches?season=" + 8);
