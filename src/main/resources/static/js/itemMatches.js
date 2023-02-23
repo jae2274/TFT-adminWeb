@@ -3,8 +3,8 @@ let app = new Vue({
     data: {
         removeEngStrings: [{target: ' '}, {target: '\''}],
         removeIdStrings: [{target: 'TFT8_Item_'}, {target: 'TFT4_Item_'}, {target: 'TFT5_Item_'}, {target: 'Ornn'}, {target: 'Item'}, {target: 'TFT__'}],
-        itemEngValues: [],
-        itemIdValues: [],
+        engNameValues: [],
+        dataIdValues: [],
         similarities: [],
         jobs: [],
         affiliations: [],
@@ -18,12 +18,12 @@ let app = new Vue({
     },
     methods: {
         handleIds() {
-            this.itemIdValues = swapIndexes(this.itemIdValues, this.futureIndex, this.movingIndex)
+            this.dataIdValues = swapIndexes(this.dataIdValues, this.futureIndex, this.movingIndex)
 
             this.setSimilarities()
         },
         handleEngNames() {
-            this.itemEngValues = swapIndexes(this.itemEngValues, this.futureIndex, this.movingIndex)
+            this.engNameValues = swapIndexes(this.engNameValues, this.futureIndex, this.movingIndex)
 
             this.setSimilarities()
         },
@@ -35,17 +35,17 @@ let app = new Vue({
         },
         putItemMatches: async function () {
 
-            const itemMatches = this.itemEngValues.map((value, index) => {
+            const itemMatches = this.engNameValues.map((value, index) => {
                 return {
-                    itemEngName: value.original,
-                    itemId: this.itemIdValues[index].original,
-                    isFixed: this.itemIdValues[index].isFixed,
+                    engName: value.original,
+                    dataId: this.dataIdValues[index].original,
+                    isFixed: this.dataIdValues[index].isFixed,
                 }
             });
 
             const request = {
                 season: "8",
-                itemMatches: itemMatches
+                matches: itemMatches
             }
 
             await callApi("PUT", "http://localhost:8080/item_matches?season=", request)
@@ -61,8 +61,8 @@ let app = new Vue({
             this.removeEngStrings = [...this.removeEngStrings.slice(0, index), ...this.removeEngStrings.slice(index + 1, this.removeEngStrings.length)]
         },
         removeTargetStrings() {
-            this.itemEngValues = setTargetForCompare(this.itemEngValues, this.removeEngStrings.map(value => value.target))
-            this.itemIdValues = setTargetForCompare(this.itemIdValues, this.removeIdStrings.map(value => value.target))
+            this.engNameValues = setTargetForCompare(this.engNameValues, this.removeEngStrings.map(value => value.target))
+            this.dataIdValues = setTargetForCompare(this.dataIdValues, this.removeIdStrings.map(value => value.target))
 
             this.sortSimilarities()
         },
@@ -77,18 +77,18 @@ let app = new Vue({
         },
         async reload() {
             const response = await getItemMatches();
-            this.itemIdValues = response.itemMatches
+            this.dataIdValues = response.matches
                 .map((value, index) => {
-                    return {original: value.itemId, index: index, isFixed: false, target: value.itemId};
+                    return {original: value.dataId, index: index, isFixed: false, target: value.dataId};
                 });
 
 
-            this.itemEngValues = response.itemMatches
+            this.engNameValues = response.matches
                 .map((value, index) => {
                         return {
-                            original: value.itemEngName,
-                            itemImageUrl: value.itemImageUrl,
-                            target: value.itemEngName,
+                            original: value.engName,
+                            imageUrl: value.imageUrl,
+                            target: value.engName,
                             index: index
                         };
                     }
@@ -98,26 +98,26 @@ let app = new Vue({
             this.matchMostSimilarity()
         },
         setSimilarities() {
-            this.similarities = getSimilaritiesOfTwoArrays(this.itemEngValues, this.itemIdValues)
+            this.similarities = getSimilaritiesOfTwoArrays(this.engNameValues, this.dataIdValues)
 
-            this.itemIdValues = setFixed(this.similarities, this.itemIdValues)
+            this.dataIdValues = setFixed(this.similarities, this.dataIdValues)
         },
         sortSimilarities() {
             this.setSimilarities()
-            const package = zip3(this.itemEngValues, this.itemIdValues, this.similarities)
+            const package = zip3(this.engNameValues, this.dataIdValues, this.similarities)
                 .sort((prev, next) => next[2] - prev[2])
 
-            this.itemEngValues = package.map(value => value[0])
-            this.itemIdValues = package.map(value => value[1])
+            this.engNameValues = package.map(value => value[0])
+            this.dataIdValues = package.map(value => value[1])
             this.similarities = package.map(value => value[2])
         },
         matchMostSimilarity() {
             this.removeTargetStrings()
 
-            let [newItemEngValues, newItemIdValues] = matchMostSimilarities(this.itemEngValues, this.itemIdValues, this.searchTarget)
+            let [newEngValues, newdataIdValues] = matchMostSimilarities(this.engNameValues, this.dataIdValues, this.searchTarget)
 
-            this.itemEngValues = newItemEngValues
-            this.itemIdValues = newItemIdValues
+            this.engNameValues = newEngValues
+            this.dataIdValues = newdataIdValues
 
             this.setSimilarities()
         }

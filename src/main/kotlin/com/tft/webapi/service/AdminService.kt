@@ -1,8 +1,8 @@
 package com.tft.webapi.service
 
-import com.tft.webapi.controller.request.PutItemMatchesReq
+import com.tft.webapi.controller.request.PutMatchesReq
 import com.tft.webapi.controller.response.ChampionMatchRes
-import com.tft.webapi.controller.response.ItemMatchRes
+import com.tft.webapi.controller.response.MatchRes
 import com.tft.webapi.entity.Champion
 import com.tft.webapi.entity.Item
 import com.tft.webapi.repository.ChampionRepository
@@ -32,16 +32,16 @@ class AdminService(
 
     fun getItemMatches(
             season: String,
-    ): ItemMatchRes {
+    ): MatchRes {
         val items: List<Item> = itemRepository.findAllBySeasonAndIsFixed(season, false)
                 .sortedByDescending { item -> item.similarity }
 
-        return ItemMatchRes(
-                itemMatches = items.map {
-                    ItemMatchRes.ItemMatch(
-                            itemId = it.itemId,
-                            itemEngName = it.itemEngName,
-                            itemImageUrl = it.imageUrl,
+        return MatchRes(
+                matches = items.map {
+                    MatchRes.MatchData(
+                            dataId = it.itemId,
+                            engName = it.itemEngName,
+                            imageUrl = it.imageUrl,
                     )
                 }
         )
@@ -49,16 +49,16 @@ class AdminService(
 
     @Transactional
     fun putItemMatches(
-            request: PutItemMatchesReq
+            request: PutMatchesReq
     ) {
         val items: List<Item> =
-                itemRepository.findAllBySeasonAndItemEngNameIn(request.season, request.itemMatches.map { it.itemEngName })
+                itemRepository.findAllBySeasonAndItemEngNameIn(request.season, request.matches.map { it.engName })
 
-        val itemMap: Map<String, PutItemMatchesReq.ItemMatch> =
-                request.itemMatches.associateBy({ it.itemEngName }, { it })
+        val itemMap: Map<String, PutMatchesReq.Match> =
+                request.matches.associateBy({ it.engName }, { it })
 
         for (item: Item in items) {
-            item.itemId = itemMap[item.itemEngName]?.itemId
+            item.itemId = itemMap[item.itemEngName]?.dataId
             item.isFixed = itemMap[item.itemEngName]?.isFixed ?: false
         }
 

@@ -42,25 +42,25 @@
             <div class="guide-cheatsheet__synergy" style="overflow-x: auto;display: flex;align-items: center;">
                 <div style="min-width: 1800px;float: left;display: flex;width: 33%;">
                     <div id="itemEngNames" style="width: 500px;">
-                        <draggable v-model="itemEngValues" draggable=".itemEngNameList" :move="checkMove"
+                        <draggable v-model="engNameValues" draggable=".itemEngNameList" :move="checkMove"
                                    @end="handleEngNames">
-                            <div v-for="itemEngNameObj in itemEngValues" class="itemEngNameList"
+                            <div v-for="engNameObj in engNameValues" class="itemEngNameList"
                                  style="height: 50px;display: flex;">
                                 <span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
-                                <span><img v-bind:src="itemEngNameObj.itemImageUrl" style="height: 50px;"></span>
-                                <div><span v-bind:title="itemEngNameObj.original">{{itemEngNameObj.target}}</span>
+                                <span><img v-bind:src="engNameObj.imageUrl" style="height: 50px;"></span>
+                                <div><span v-bind:title="engNameObj.original">{{engNameObj.target}}</span>
                                     <!--                                    <span>{{itemEngNameObj.itemEngName}}</span>-->
                                 </div>
                             </div>
                         </draggable>
                     </div>
                     <div id="itemIds" style="width: 500px;">
-                        <draggable v-model="itemIdValues" draggable=".itemIdList" :move="checkMove" @end="handleIds">
-                            <div v-for="itemIdObj in itemIdValues" class="itemIdList" style="height: 50px;">
+                        <draggable v-model="dataIdValues" draggable=".itemIdList" :move="checkMove" @end="handleIds">
+                            <div v-for="dataIdObj in dataIdValues" class="itemIdList" style="height: 50px;">
                                 <span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
-                                <span v-bind:title="itemIdObj.original">{{itemIdObj.target}}</span>
+                                <span v-bind:title="dataIdObj.original">{{dataIdObj.target}}</span>
                                 <!--                                <span>{{itemIdObj.itemId}}</span>-->
-                                <input type="checkbox" v-model="itemIdObj.isFixed">
+                                <input type="checkbox" v-model="dataIdObj.isFixed">
                             </div>
                         </draggable>
                     </div>
