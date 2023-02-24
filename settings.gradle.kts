@@ -1,1 +1,1 @@
-rootProject.name = "TFT-webApi"
+rootProject.name = "TFT-adminWeb"
