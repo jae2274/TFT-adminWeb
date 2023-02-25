@@ -1,10 +1,10 @@
 package com.tft.webapi.controller.response
 
 data class MatchRes(
-        var matches: List<MatchData>,
+        val datas: List<MatchData>,
+        val dataIds: Collection<String>,
 ) {
     data class MatchData(
-            var dataId: String?,
             var engName: String,
             var imageUrl: String,
     )

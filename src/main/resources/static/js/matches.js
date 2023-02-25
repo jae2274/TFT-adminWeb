@@ -8,9 +8,7 @@ let app = new Vue({
         similarities: [],
         jobs: [],
         affiliations: [],
-        itemsMap: {},
         targets: [],
-        itemsMapById: {},
         searchTarget: '',
     },
     async mounted() {
@@ -33,9 +31,9 @@ let app = new Vue({
             this.futureIndex = futureIndex
             return false // disable sort
         },
-        putItemMatches: async function () {
+        putMatcheDatas: async function () {
 
-            const itemMatches = this.engNameValues.map((value, index) => {
+            const matcheDatas = this.engNameValues.map((value, index) => {
                 return {
                     engName: value.original,
                     dataId: this.dataIdValues[index].original,
@@ -45,10 +43,10 @@ let app = new Vue({
 
             const request = {
                 season: "8",
-                matches: itemMatches
+                matches: matcheDatas
             }
 
-            await callApi("PUT", "http://localhost:8080/" + subUrl + "?season=", request)
+            await callApi("PUT", "http://localhost:8081/" + subUrl + "?season=", request)
             await this.reload()
         },
         newRemoveEngString(index) {
@@ -76,14 +74,14 @@ let app = new Vue({
             this.removeIdStrings = [...this.removeIdStrings.slice(0, index), ...this.removeIdStrings.slice(index + 1, this.removeIdStrings.length)]
         },
         async reload() {
-            const response = await getItemMatches();
-            this.dataIdValues = response.matches
-                .map((value, index) => {
-                    return {original: value.dataId, index: index, isFixed: false, target: value.dataId};
+            const response = await getMatchDatas();
+            this.dataIdValues = response.dataIds
+                .map((dataId, index) => {
+                    return {original: dataId, index: index, isFixed: false, target: dataId};
                 });
 
 
-            this.engNameValues = response.matches
+            this.engNameValues = response.datas
                 .map((value, index) => {
                         return {
                             original: value.engName,
@@ -125,8 +123,8 @@ let app = new Vue({
 })
 
 
-async function getItemMatches() {
-    let response = await fetch("http://localhost:8080/" + subUrl + "?season=" + 8);
+async function getMatchDatas() {
+    let response = await fetch("http://localhost:8081/" + subUrl + "?season=" + 8);
     let json = response.json();
 
     return json;

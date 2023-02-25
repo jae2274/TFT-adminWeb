@@ -12,6 +12,13 @@ spring:
       host: localhost
       port: 27017
       database: tft_service
-
-spring.devtools.restart.enabled: false
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: true
+      
 spring.thymeleaf.cache: false
+
+server:
+  port: 8081
