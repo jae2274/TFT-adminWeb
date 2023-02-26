@@ -2,13 +2,8 @@ package com.tft.webapi.service
 
 import com.tft.webapi.controller.request.PutMatchesReq
 import com.tft.webapi.controller.response.MatchRes
-import com.tft.webapi.entity.Champion
-import com.tft.webapi.entity.IdType
-import com.tft.webapi.entity.Item
-import com.tft.webapi.entity.TFTData
-import com.tft.webapi.repository.ChampionRepository
-import com.tft.webapi.repository.IdSetRepository
-import com.tft.webapi.repository.ItemRepository
+import com.tft.webapi.entity.*
+import com.tft.webapi.repository.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -16,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional
 class AdminService(
         private val championRepository: ChampionRepository,
         private val itemRepository: ItemRepository,
+        private val synergyRepository: SynergyRepository,
+        private val augmentRepository: AugmentRepository,
         private val idSetRepository: IdSetRepository,
 ) {
     fun getChampionMatches(
@@ -52,6 +49,27 @@ class AdminService(
                     MatchRes.MatchData(
                             engName = it.engName,
                             imageUrl = it.imageUrl,
+                            engName2 = it.engName2,
+                    )
+                },
+                dataIds = dataIds,
+        )
+    }
+
+    fun getSynergyMatches(
+            season: String,
+    ): MatchRes {
+        val items: List<Synergy> = synergyRepository.findAllBySeason(season)
+        val alreadyMatchedIds = items.filter { it.isFixed }.map { it.dataId }
+
+        val dataIds = idSetRepository.findBySeasonNumberAndType(season.toInt(), IdType.SYNERGY).ids
+                .filterNot { alreadyMatchedIds.contains(it) }
+
+        return MatchRes(
+                datas = items.filterNot { it.isFixed }.map {
+                    MatchRes.MatchData(
+                            engName = it.engName,
+                            imageUrl = it.imageUrl,
                     )
                 },
                 dataIds = dataIds,
@@ -80,6 +98,15 @@ class AdminService(
 
     }
 
+    fun putSynergyMatches(request: PutMatchesReq) {
+        val synergies: List<Synergy> =
+                synergyRepository.findAllBySeasonAndEngNameIn(request.season, request.matches.map { it.engName })
+
+
+        matching(request, synergies)
+        synergyRepository.saveAll(synergies)
+    }
+
     fun matching(request: PutMatchesReq, tftDatas: List<TFTData>) {
         val dataMap: Map<String, PutMatchesReq.Match> =
                 request.matches.associateBy({ it.engName }, { it })
@@ -88,5 +115,32 @@ class AdminService(
             tftData.dataId = dataMap[tftData.engName]?.dataId
             tftData.isFixed = dataMap[tftData.engName]?.isFixed ?: false
         }
+    }
+
+    fun getAugmentMatches(season: String): MatchRes {
+        val items: List<Augment> = augmentRepository.findAllBySeason(season)
+        val alreadyMatchedIds = items.filter { it.isFixed }.map { it.dataId }
+
+        val dataIds = idSetRepository.findBySeasonNumberAndType(season.toInt(), IdType.AUGMENT).ids
+                .filterNot { alreadyMatchedIds.contains(it) }
+
+        return MatchRes(
+                datas = items.filterNot { it.isFixed }.map {
+                    MatchRes.MatchData(
+                            engName = it.engName,
+                            imageUrl = it.imageUrl,
+                    )
+                },
+                dataIds = dataIds,
+        )
+    }
+
+    fun putAugmentMatches(request: PutMatchesReq) {
+        val synergies: List<Augment> =
+                augmentRepository.findAllBySeasonAndEngNameIn(request.season, request.matches.map { it.engName })
+
+
+        matching(request, synergies)
+        augmentRepository.saveAll(synergies)
     }
 }

@@ -29,17 +29,23 @@ function matchMostSimilarities(firstArray, secondArray, priorityKeyword) {
 function setFixed(similarities, array) {
     return array.map((value, index) => {
         const newValue = Object.assign({}, value)
-        newValue.isFixed = similarities[index] > 0.9
+        newValue.isFixed = similarities[index] > 0.99
         return newValue
     })
 }
 
-function setTargetForCompare(array, removeStrings) {
+function setTargetForCompare(array, removeStrings, replaceStrings) {
     return array.map(element => {
         let target = element.original
-        for (let removeString of removeStrings) {
+
+        for (const removeString of removeStrings) {
             target = target.replaceAll(removeString, "")
         }
+
+        for (const {searchValue, replaceValue} of replaceStrings) {
+            target = target.replaceAll(searchValue, replaceValue)
+        }
+
         const newElement = Object.assign({}, element)
         newElement.target = target
         return newElement
@@ -52,6 +58,7 @@ function search(keyword, array) {
 
 function getSimilaritiesOfTwoArrays(firstArray, secondArray) {
     return zip2(firstArray.map(value => value.target), secondArray.map(value => value.target))
+        .filter(values => values[0] && values[1])
         .map(values => calculateSimilarity(values[0], values[1]))
 }
 

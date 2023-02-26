@@ -18,12 +18,21 @@ class AdminController(
         return adminService.getChampionMatches(season)
     }
 
+    @PutMapping("/champion_matches")
+    fun putChampionMatches(
+            @RequestBody
+            putChampionMatchesReq: PutMatchesReq
+    ): Unit {
+        adminService.putChampionMatches(putChampionMatchesReq)
+    }
+
     @GetMapping("/item_matches")
     fun itemMatches(
             @RequestParam
             season: String,
     ): MatchRes {
-        return adminService.getItemMatches(season)
+        val itemMatches = adminService.getItemMatches(season)
+        return itemMatches
     }
 
     @PutMapping("/item_matches")
@@ -34,11 +43,36 @@ class AdminController(
         adminService.putItemMatches(putItemMatchesReq)
     }
 
-    @PutMapping("/champion_matches")
-    fun putChampionMatches(
-            @RequestBody
-            putChampionMatchesReq: PutMatchesReq
-    ): Unit {
-        adminService.putChampionMatches(putChampionMatchesReq)
+    @GetMapping("/synergy_matches")
+    fun synergyMatches(
+            @RequestParam
+            season: String,
+    ): MatchRes {
+        return adminService.getSynergyMatches(season)
     }
+
+    @PutMapping("/synergy_matches")
+    fun putSynergyMatches(
+            @RequestBody
+            request: PutMatchesReq
+    ): Unit {
+        adminService.putSynergyMatches(request)
+    }
+
+    @GetMapping("/augment_matches")
+    fun augmentMatches(
+            @RequestParam
+            season: String,
+    ): MatchRes {
+        return adminService.getAugmentMatches(season)
+    }
+
+    @PutMapping("/augment_matches")
+    fun putAugmentMatches(
+            @RequestBody
+            request: PutMatchesReq
+    ): Unit {
+        adminService.putAugmentMatches(request)
+    }
+
 }

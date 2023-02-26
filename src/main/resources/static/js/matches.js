@@ -1,9 +1,20 @@
 let app = new Vue({
     el: '#app',
     data: {
-        removeEngStrings: [{target: ' '}, {target: '\''}],
-        removeIdStrings: [{target: 'TFT8_Item_'}, {target: 'TFT4_Item_'}, {target: 'TFT5_Item_'}, {target: 'Ornn'}, {target: 'Item'}, {target: 'TFT__'}],
+        // removeEngStrings: [{target: ' '}, {target: '\''}],
+        // removeIdStrings: [{target: 'TFT8_Item_'}, {target: 'TFT4_Item_'}, {target: 'TFT5_Item_'}, {target: 'Ornn'}, {target: 'Item'}, {target: 'TFT__'}],
+        removeEngStrings: [{target: '.tft'}, {target: '-'}],
+        removeIdStrings: [{target: 'TFT8_'}, {target: 'TFT7_'}, {target: 'TFT6_'}, {target: 'TFT5_'}, {target: 'TFT4_'}, {target: 'TFT3_'}, {target: 'TFT2_'}, {target: 'TFT1_'}, {target: 'Augment_'}],
+        replaceEngStrings: [{searchValue: '1', replaceValue: 'I'}, {
+            searchValue: '2',
+            replaceValue: 'II'
+        }, {searchValue: '3', replaceValue: 'III'}],
+        replaceIdStrings: [{searchValue: '1', replaceValue: 'I'}, {
+            searchValue: '2',
+            replaceValue: 'II'
+        }, {searchValue: '3', replaceValue: 'III'}],
         engNameValues: [],
+        isAlias: false,
         dataIdValues: [],
         similarities: [],
         jobs: [],
@@ -17,7 +28,6 @@ let app = new Vue({
     methods: {
         handleIds() {
             this.dataIdValues = swapIndexes(this.dataIdValues, this.futureIndex, this.movingIndex)
-
             this.setSimilarities()
         },
         handleEngNames() {
@@ -35,7 +45,7 @@ let app = new Vue({
 
             const matcheDatas = this.engNameValues.map((value, index) => {
                 return {
-                    engName: value.original,
+                    engName: value.engName,
                     dataId: this.dataIdValues[index].original,
                     isFixed: this.dataIdValues[index].isFixed,
                 }
@@ -59,8 +69,8 @@ let app = new Vue({
             this.removeEngStrings = [...this.removeEngStrings.slice(0, index), ...this.removeEngStrings.slice(index + 1, this.removeEngStrings.length)]
         },
         removeTargetStrings() {
-            this.engNameValues = setTargetForCompare(this.engNameValues, this.removeEngStrings.map(value => value.target))
-            this.dataIdValues = setTargetForCompare(this.dataIdValues, this.removeIdStrings.map(value => value.target))
+            this.engNameValues = setTargetForCompare(this.engNameValues, this.removeEngStrings.map(value => value.target), this.replaceEngStrings)
+            this.dataIdValues = setTargetForCompare(this.dataIdValues, this.removeIdStrings.map(value => value.target), this.replaceIdStrings)
 
             this.sortSimilarities()
         },
@@ -73,11 +83,29 @@ let app = new Vue({
                 return
             this.removeIdStrings = [...this.removeIdStrings.slice(0, index), ...this.removeIdStrings.slice(index + 1, this.removeIdStrings.length)]
         },
+        newReplaceIdString(index) {
+            this.replaceIdStrings = [...this.replaceIdStrings.slice(0, index + 1), {target: ''}, ...this.replaceIdStrings.slice(index + 1, this.replaceIdStrings.length)]
+
+        },
+        replaceIdStringInput(index) {
+            if (this.replaceIdStrings.length == 1)
+                return
+            this.replaceIdStrings = [...this.replaceIdStrings.slice(0, index), ...this.replaceIdStrings.slice(index + 1, this.replaceIdStrings.length)]
+        },
+        newReplaceEngString(index) {
+            this.replaceEngStrings = [...this.replaceEngStrings.slice(0, index + 1), {target: ''}, ...this.replaceEngStrings.slice(index + 1, this.replaceEngStrings.length)]
+
+        },
+        replaceEngStringInput(index) {
+            if (this.replaceEngStrings.length == 1)
+                return
+            this.replaceEngStrings = [...this.replaceEngStrings.slice(0, index), ...this.replaceEngStrings.slice(index + 1, this.replaceEngStrings.length)]
+        },
         async reload() {
             const response = await getMatchDatas();
             this.dataIdValues = response.dataIds
                 .map((dataId, index) => {
-                    return {original: dataId, index: index, isFixed: false, target: dataId};
+                    return {original: dataId, index: index, isFixed: false};
                 });
 
 
@@ -86,8 +114,9 @@ let app = new Vue({
                         return {
                             original: value.engName,
                             imageUrl: value.imageUrl,
-                            target: value.engName,
-                            index: index
+                            index: index,
+                            engName: value.engName,
+                            engName2: value.engName2,
                         };
                     }
                 );
@@ -103,11 +132,11 @@ let app = new Vue({
         sortSimilarities() {
             this.setSimilarities()
             const package = zip3(this.engNameValues, this.dataIdValues, this.similarities)
-                .sort((prev, next) => next[2] - prev[2])
+                .sort((prev, next) => next[2] && prev[2] ? (next[2] - prev[2]) : Number.MIN_VALUE)
 
-            this.engNameValues = package.map(value => value[0])
-            this.dataIdValues = package.map(value => value[1])
-            this.similarities = package.map(value => value[2])
+            this.engNameValues = package.filter(value => value[0]).map(value => value[0])
+            this.dataIdValues = package.filter(value => value[1]).map(value => value[1])
+            this.similarities = package.filter(value => value[2]).map(value => value[2])
         },
         matchMostSimilarity() {
             this.removeTargetStrings()
@@ -117,6 +146,17 @@ let app = new Vue({
             this.engNameValues = newEngValues
             this.dataIdValues = newdataIdValues
 
+            this.setSimilarities()
+        },
+
+        toggleAlias() {
+            this.isAlias = !this.isAlias
+            this.engNameValues.forEach(value => {
+                const willUsedName = this.isAlias ? value.engName2 : value.engName
+                value.original = willUsedName
+                value.target = willUsedName
+            })
+            this.removeTargetStrings()
             this.setSimilarities()
         }
     }
@@ -149,5 +189,13 @@ async function callApi(method, url = '', data = {}) {
     return response; // JSON 응답을 네이티브 JavaScript 객체로 파싱
 }
 
-const zip2 = (a, b) => a.map((k, i) => [k, b[i]]);
-const zip3 = (a, b, c) => a.map((k, i) => [k, b[i], c[i]]);
+function zip2(a, b) {
+    const biggetLength = a.length > b.length ? a.length : b.length
+    return Array.from({length: biggetLength}, (_, i) => [a[i], b[i]])
+}
+
+function zip3(a, b, c) {
+    const biggetLength = Math.max(a.length, b.length, c.length)
+    return Array.from({length: biggetLength}, (_, i) => [a[i], b[i], c[i]])
+}
+

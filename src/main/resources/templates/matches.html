@@ -11,7 +11,7 @@
     <div class="guide-cheatsheet">
         <button v-on:click="putMatcheDatas">제출</button>
 
-        <div style="display: flex">
+        <div style="display: inline-block;">
             <div style="min-width: 1100px;float: left;display: flex;width: 33%;">
                 <div style="width: 500px;">
                     <div>제외할 문자열
@@ -33,8 +33,37 @@
                     </div>
                 </div>
             </div>
+            <div style="min-width: 1100px;float: left;display: flex;width: 33%;">
+                <div style="width: 500px;">
+
+                    <div>대체할 문자열
+                        <div v-for="(value, index) in replaceEngStrings">
+                            <input type="text"
+                                   v-model="value.searchValue"/>
+                            <input type="text" v-on:keyup.enter="newReplaceEngString(index)"
+                                   v-model="value.replaceValue"/>
+                            <button v-on:click="replaceEngStringInput(index)">삭제</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="width: 500px;">
+                    <div>대체할 문자열
+                        <div v-for="(value, index) in replaceIdStrings">
+                            <input type="text"
+                                   v-model="value.searchValue"/>
+                            <input type="text" v-on:keyup.enter="newReplaceIdString(index)"
+                                   v-model="value.replaceValue"/>
+                            <button v-on:click="replaceIdStringInput(index)">삭제</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <button v-on:click="matchMostSimilarity">리매칭</button>
+        <div>
+            <input type="checkbox" v-on:click="toggleAlias">
+            <label>이명으로 검색하기</label>
+        </div>
         <div>
             <input type="text" v-on:keyup.enter="matchMostSimilarity" v-model="searchTarget"/>
         </div>
@@ -47,7 +76,8 @@
                             <div v-for="engNameObj in engNameValues" class="engNameList"
                                  style="height: 50px;display: flex;">
                                 <span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
-                                <span><img v-bind:src="engNameObj.imageUrl" style="height: 50px;"></span>
+                                <span style="background-color: grey;"><img v-bind:src="engNameObj.imageUrl"
+                                                                           style="height: 50px;"></span>
                                 <div><span v-bind:title="engNameObj.original">{{engNameObj.target}}</span>
                                     <!--                                    <span>{{engNameObj.engName}}</span>-->
                                 </div>

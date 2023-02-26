@@ -2,7 +2,6 @@ package com.tft.webapi.entity
 
 import com.querydsl.core.annotations.QueryEntity
 import org.springframework.data.mongodb.core.mapping.Document
-import javax.persistence.Entity
 import javax.persistence.Id
 
 @Document
@@ -25,8 +24,6 @@ data class Champion(
         override var dataId: String? = null,
         override var similarity: Double? = null,
 ) : TFTData {
-    @Entity
-    @QueryEntity
     data class PowerByLevel(
             var effectName: String = "",
             var effectPower: String = "",

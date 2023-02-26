@@ -5,7 +5,8 @@ data class MatchRes(
         val dataIds: Collection<String>,
 ) {
     data class MatchData(
-            var engName: String,
-            var imageUrl: String,
+            val engName: String,
+            val imageUrl: String,
+            val engName2: String? = null,
     )
 }

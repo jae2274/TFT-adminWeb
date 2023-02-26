@@ -1,4 +1,8 @@
 function calculateSimilarity(s1, s2, ignoreCase = true) {
+    if (!s1 || !s2) {
+        return null
+    }
+
     s1 = ignoreCase ? s1.toLowerCase() : s1;
     s2 = ignoreCase ? s2.toLowerCase() : s2;
 
