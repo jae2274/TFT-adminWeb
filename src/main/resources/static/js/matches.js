@@ -1,3 +1,5 @@
+const season = "8.5"
+
 let app = new Vue({
     el: '#app',
     data: {
@@ -52,7 +54,7 @@ let app = new Vue({
             });
 
             const request = {
-                season: "8",
+                season,
                 matches: matcheDatas
             }
 
@@ -164,7 +166,7 @@ let app = new Vue({
 
 
 async function getMatchDatas() {
-    let response = await fetch("http://localhost:8081/" + subUrl + "?season=" + 8);
+    let response = await fetch("http://localhost:8081/" + subUrl + "?season=" + season);
     let json = response.json();
 
     return json;

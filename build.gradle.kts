@@ -72,6 +72,7 @@ dependencies {
 
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 
+    implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.3")
 
     implementation("org.mapstruct:mapstruct:1.5.2.Final")
     kapt("org.mapstruct:mapstruct-processor:1.5.2.Final")

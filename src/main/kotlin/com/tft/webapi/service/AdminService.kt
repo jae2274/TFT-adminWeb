@@ -21,7 +21,8 @@ class AdminService(
         val champions: List<Champion> = championRepository.findAllBySeason(season)
         val alreadyMatchedIds = champions.filter { it.isFixed }.map { it.dataId }
 
-        val dataIds = idSetRepository.findBySeasonNumberAndType(season.toInt(), IdType.CHAMPION).ids
+
+        val dataIds = idSetRepository.findBySeasonAndType("TFTSet${season.replace(".5", "_2")}", IdType.CHAMPION).ids
                 .filterNot { alreadyMatchedIds.contains(it) }
 
         return MatchRes(
@@ -41,7 +42,7 @@ class AdminService(
         val items: List<Item> = itemRepository.findAllBySeason(season)
         val alreadyMatchedIds = items.filter { it.isFixed }.map { it.dataId }
 
-        val dataIds = idSetRepository.findBySeasonNumberAndType(season.toInt(), IdType.ITEM).ids
+        val dataIds = idSetRepository.findBySeasonAndType("TFTSet${season.replace(".5", "_2")}", IdType.ITEM).ids
                 .filterNot { alreadyMatchedIds.contains(it) }
 
         return MatchRes(
@@ -62,7 +63,7 @@ class AdminService(
         val items: List<Synergy> = synergyRepository.findAllBySeason(season)
         val alreadyMatchedIds = items.filter { it.isFixed }.map { it.dataId }
 
-        val dataIds = idSetRepository.findBySeasonNumberAndType(season.toInt(), IdType.SYNERGY).ids
+        val dataIds = idSetRepository.findBySeasonAndType("TFTSet${season.replace(".5", "_2")}", IdType.SYNERGY).ids
                 .filterNot { alreadyMatchedIds.contains(it) }
 
         return MatchRes(
@@ -121,7 +122,7 @@ class AdminService(
         val items: List<Augment> = augmentRepository.findAllBySeason(season)
         val alreadyMatchedIds = items.filter { it.isFixed }.map { it.dataId }
 
-        val dataIds = idSetRepository.findBySeasonNumberAndType(season.toInt(), IdType.AUGMENT).ids
+        val dataIds = idSetRepository.findBySeasonAndType("TFTSet${season.replace(".5", "_2")}", IdType.AUGMENT).ids
                 .filterNot { alreadyMatchedIds.contains(it) }
 
         return MatchRes(
