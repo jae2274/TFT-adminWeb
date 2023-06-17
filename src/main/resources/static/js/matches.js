@@ -1,4 +1,4 @@
-const season = "8.5"
+const season = "9"
 
 let app = new Vue({
     el: '#app',
@@ -46,10 +46,11 @@ let app = new Vue({
         putMatcheDatas: async function () {
 
             const matcheDatas = this.engNameValues.map((value, index) => {
+                const dataIdValue = this.dataIdValues[index]
                 return {
                     engName: value.engName,
-                    dataId: this.dataIdValues[index].original,
-                    isFixed: this.dataIdValues[index].isFixed,
+                    dataId: dataIdValue?dataIdValue.original:null,
+                    isFixed: dataIdValue?dataIdValue.isFixed:false,
                 }
             });
 
